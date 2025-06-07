@@ -1,0 +1,22 @@
+{
+  "name": "google-vertex-express-endpoint",
+  "version": "1.0.0",
+  "description": "快速获取您的 Google Vertex AI 终端节点的简单工具",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve .",
+    "dev": "serve ."
+  },
+  "keywords": [
+    "google",
+    "vertex-ai",
+    "gemini",
+    "api",
+    "endpoint"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.0.0"
+  }
+}

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Google Vertex Express Endpoint</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        max-width: 800px;
+        width: 100%;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .header h1 {
+        color: #333;
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        font-weight: 300;
+      }
+
+      .header p {
+        color: #666;
+        font-size: 1.1em;
+      }
+
+      .input-section {
+        margin-bottom: 30px;
+      }
+
+      .input-group {
+        position: relative;
+        margin-bottom: 20px;
+      }
+
+      .input-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #333;
+        font-weight: 500;
+      }
+
+      .input-group input {
+        width: 100%;
+        padding: 15px 20px;
+        border: 2px solid #e1e5e9;
+        border-radius: 10px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+      }
+
+      .input-group input:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        margin: 20px 0;
+      }
+
+      .spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 10px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .result-section {
+        display: none;
+        margin-top: 30px;
+        padding: 25px;
+        background: #f8f9fa;
+        border-radius: 15px;
+        border-left: 5px solid #28a745;
+      }
+
+      .error-section {
+        display: none;
+        margin-top: 30px;
+        padding: 25px;
+        background: #fff5f5;
+        border-radius: 15px;
+        border-left: 5px solid #dc3545;
+      }
+
+      .result-item {
+        margin-bottom: 20px;
+      }
+
+      .result-item h3 {
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 1.2em;
+      }
+
+      .result-value {
+        background: white;
+        padding: 15px 80px 15px 15px; /* 右侧留出空间给复制按钮 */
+        border-radius: 8px;
+        border: 1px solid #e1e5e9;
+        font-family: "Courier New", monospace;
+        word-break: break-all;
+        position: relative;
+        min-height: 20px;
+      }
+
+      .copy-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+      }
+
+      .copy-btn:hover {
+        background: #5a6fd8;
+        transform: translateY(-1px);
+      }
+
+      .models-list {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #e1e5e9;
+      }
+
+      .models-list ul {
+        list-style: none;
+      }
+
+      .model-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+      }
+
+      .model-item:last-child {
+        border-bottom: none;
+      }
+
+      .model-name {
+        font-family: "Courier New", monospace;
+        flex: 1;
+        margin-right: 10px;
+      }
+
+      .model-copy-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+      }
+
+      .model-copy-btn:hover {
+        background: #218838;
+        transform: translateY(-1px);
+      }
+
+      .error-message {
+        color: #dc3545;
+        font-weight: 500;
+      }
+
+      @media (max-width: 600px) {
+        .container {
+          padding: 20px;
+        }
+
+        .header h1 {
+          font-size: 2em;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🚀 Google Vertex Express Endpoint</h1>
+        <p>快速获取您的 Google Vertex AI 终端节点</p>
+      </div>
+
+      <div class="input-section">
+        <div class="input-group">
+          <label for="apiKey">请输入您的 API Key:</label>
+          <input
+            type="text"
+            id="apiKey"
+            placeholder="输入您的 Google AI API Key"
+          />
+        </div>
+        <button class="btn" onclick="generateUrl()">生成终端节点</button>
+      </div>
+
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>正在验证 API Key...</p>
+      </div>
+
+      <div class="error-section" id="errorSection">
+        <h3>❌ 错误信息</h3>
+        <div class="error-message" id="errorMessage"></div>
+      </div>
+
+      <div class="result-section" id="resultSection">
+        <div class="result-item">
+          <h3>🔗 终端节点</h3>
+          <div class="result-value">
+            <span id="endpointUrl"></span>
+            <button class="copy-btn" onclick="copyToClipboard('endpointUrl')">
+              复制
+            </button>
+          </div>
+        </div>
+
+        <div class="result-item">
+          <h3>📋 可用模型</h3>
+          <div class="models-list">
+            <ul>
+              <li class="model-item">
+                <span class="model-name">gemini-2.5-pro-preview-06-05</span>
+                <button
+                  class="model-copy-btn"
+                  onclick="copyModelName('gemini-2.5-pro-preview-06-05')"
+                >
+                  复制
+                </button>
+              </li>
+              <li class="model-item">
+                <span class="model-name">gemini-2.5-pro-preview-05-06</span>
+                <button
+                  class="model-copy-btn"
+                  onclick="copyModelName('gemini-2.5-pro-preview-05-06')"
+                >
+                  复制
+                </button>
+              </li>
+              <li class="model-item">
+                <span class="model-name">gemini-2.5-flash-preview-05-20</span>
+                <button
+                  class="model-copy-btn"
+                  onclick="copyModelName('gemini-2.5-flash-preview-05-20')"
+                >
+                  复制
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      async function generateUrl() {
+        const apiKey = document.getElementById("apiKey").value.trim();
+
+        if (!apiKey) {
+          showError("请输入 API Key");
+          return;
+        }
+
+        // 显示加载状态
+        showLoading(true);
+        hideResults();
+
+        try {
+          const testUrl = `https://aiplatform.googleapis.com/v1/publishers/google/models/o3:streamGenerateContent?key=${apiKey}`;
+
+          const response = await fetch(testUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}),
+          });
+
+          const data = await response.json();
+
+          if (response.status === 404) {
+            // 检查是否是预期的404响应格式
+            let errorData = null;
+
+            // 处理数组格式的响应 [{error: {...}}] 或对象格式的响应 {error: {...}}
+            if (Array.isArray(data) && data.length > 0 && data[0].error) {
+              errorData = data[0].error;
+            } else if (data && data.error) {
+              errorData = data.error;
+            }
+
+            if (errorData && errorData.message) {
+              const projectIdMatch =
+                errorData.message.match(/projects\/(\d+)\//);
+
+              if (projectIdMatch && projectIdMatch[1]) {
+                const projectId = projectIdMatch[1];
+                const endpointUrl = `https://aiplatform.googleapis.com/v1/projects/${projectId}/locations/global/publishers`;
+
+                showResults(endpointUrl);
+              } else {
+                showError("无法从响应中提取项目ID，请检查 API Key 是否正确");
+              }
+            } else {
+              showError("响应格式不正确，无法获取项目信息");
+            }
+          } else {
+            // 非404响应，显示错误
+            let errorMessage = "API Key 不正确";
+            let errorData = null;
+
+            // 处理数组格式的响应 [{error: {...}}] 或对象格式的响应 {error: {...}}
+            if (Array.isArray(data) && data.length > 0 && data[0].error) {
+              errorData = data[0].error;
+            } else if (data && data.error) {
+              errorData = data.error;
+            }
+
+            if (errorData && errorData.message) {
+              errorMessage += `：${errorData.message}`;
+            } else if (errorData) {
+              errorMessage += `：${JSON.stringify(errorData)}`;
+            } else {
+              errorMessage += `：未知错误 (HTTP ${response.status})`;
+            }
+
+            showError(errorMessage);
+          }
+        } catch (error) {
+          showError(`网络请求失败：${error.message}`);
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      function showLoading(show) {
+        document.getElementById("loading").style.display = show
+          ? "block"
+          : "none";
+        document.querySelector(".btn").disabled = show;
+      }
+
+      function showResults(endpointUrl) {
+        document.getElementById("endpointUrl").textContent = endpointUrl;
+        document.getElementById("resultSection").style.display = "block";
+        document.getElementById("errorSection").style.display = "none";
+      }
+
+      function showError(message) {
+        document.getElementById("errorMessage").textContent = message;
+        document.getElementById("errorSection").style.display = "block";
+        document.getElementById("resultSection").style.display = "none";
+      }
+
+      function hideResults() {
+        document.getElementById("resultSection").style.display = "none";
+        document.getElementById("errorSection").style.display = "none";
+      }
+
+      function copyToClipboard(elementId) {
+        const text = document.getElementById(elementId).textContent;
+        copyText(text, event.target);
+      }
+
+      function copyModelName(modelName) {
+        copyText(modelName, event.target);
+      }
+
+      function copyText(text, button) {
+        // 尝试使用现代的 Clipboard API
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard
+            .writeText(text)
+            .then(() => {
+              showCopySuccess(button);
+            })
+            .catch((err) => {
+              console.error("Clipboard API 失败:", err);
+              fallbackCopyTextToClipboard(text, button);
+            });
+        } else {
+          // 降级到传统方法
+          fallbackCopyTextToClipboard(text, button);
+        }
+      }
+
+      function fallbackCopyTextToClipboard(text, button) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+
+        // 避免滚动到底部
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+          const successful = document.execCommand("copy");
+          if (successful) {
+            showCopySuccess(button);
+          } else {
+            showCopyError();
+          }
+        } catch (err) {
+          console.error("传统复制方法失败:", err);
+          showCopyError();
+        }
+
+        document.body.removeChild(textArea);
+      }
+
+      function showCopySuccess(button) {
+        const originalText = button.textContent;
+        const originalBackground =
+          button.style.background || getComputedStyle(button).backgroundColor;
+
+        button.textContent = "已复制!";
+        button.style.background = "#28a745";
+
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.style.background = originalBackground;
+        }, 2000);
+      }
+
+      function showCopyError() {
+        alert("复制失败，请手动复制文本");
+      }
+
+      // 回车键提交
+      document
+        .getElementById("apiKey")
+        .addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            generateUrl();
+          }
+        });
+    </script>
+  </body>
+</html>
